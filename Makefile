@@ -1,27 +1,24 @@
 APP=danbooru-tag
 APP_EXECUTABLE="./bin/$(APP)"
 
+.SILENT:
 
-quality:
-	make fmt
-	make vet
+quality: fmt vet 
 
 fmt:
 	go fmt ./...
 
 vet:
-	go vet./...
+	go vet ./...
 
-tidy:
+tidy: quality
 	go mod tidy
 
 ## Test
-test:
-	make tidy
+test: tidy
 	go test -v ./... -coverprofile=coverage.out
 
-coverage:
-	make test
+coverage: test
 	go tool cover -html=coverage.out
 ## Build
 build:
@@ -29,18 +26,18 @@ build:
 	go build -o $(APP_EXECUTABLE)
 	@echo "Build done"
 
-run:
-	make build
+run: build
 	chmod +x $(APP_EXECUTABLE)
 	$(APP_EXECUTABLE)
 
+.PHONY: clean
 clean:
 	go clean
 	rm -rf bin/
+	rm -f ./coverage.out
 
-.PHONY: all test build vendor
+.PHONY: all test build
+all: 
+	@-$(MAKE) -s test
+	@-$(MAKE) -s build
 
-all:
-	make quality
-	make test
-	make build
